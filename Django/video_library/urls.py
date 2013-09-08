@@ -1,17 +1,20 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
+from django.contrib import admin
 
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'video_library.views.home', name='home'),
-    # url(r'^video_library/', include('video_library.foo.urls')),
+    url(r'^$', 'video_manager.views.index', name='index'),
+    url(r'^vote/', 'video_manager.views.vote', name='vote'),
 
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    # User Login
+    url(r'^google/login/$', 'django_openid_auth.views.login_begin', name='openid-login'),
+    url(r'^google/login-complete/$', 'django_openid_auth.views.login_complete', name='openid-complete'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/',}, name='logout'),
 
-    # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),
+    # Administration
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 )

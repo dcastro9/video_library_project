@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load video_manager_extras %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="container videos">
+            <h2> Rate the videos below, with 1 star being the least amount of expertise. </h2>
+            {% for video in videos %}
+                <div id="{{video.filename}}" class="video">
+                    <h4 class="centered">{{video}}</h4>
+                    <video class="video-js vjs-default-skin" controls preload width="350" height="250">
+                        <source src="/static/videos/{{video.filename}}.mp4" type="video/mp4" />
+                        <source src="/static/videos/{{video.filename}}.webm" type="video/webm" />
+                        <source src="/static/videos/{{video.filename}}.ogg" type="video/ogg" />
+                    </video>
+                    <div class="rating">
+                        {% if video.filename in rated_videos %}
+                            {% for rating in ratings %}
+                                {% if video.filename == rating.video %}
+                                    {% for i in rating.rating|get_value_from_five %}
+                                        <span value='{{i}}'>☆</span>
+                                    {% endfor %}
+                                    {% for i in rating.rating|get_reverse_range %}
+                                        <span value='{{i}}' class='activated_rating'>☆</span>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span value='5'>☆</span>
+                            <span value='4'>☆</span>
+                            <span value='3'>☆</span>
+                            <span value='2'>☆</span>
+                            <span value='1'>☆</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="large_screen">
+            <div class=" login centered no_blur">
+                <h1 class="white_font centered">Surgical Video Manager </h1>
+                <a href="{% url 'django_openid_auth.views.login_begin' %}">
+                    <div class="zocial google"> Log in with Google </div>
+        	    </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+<!-- EXTRA SCRIPTS AREA -->
+{% block scripts %}
+<script src="{% static 'js/video.js' %}"></script>
+<script>
+    videojs.options.flash.swf = "{% static 'swf/video-js.swf' %}";
+    $(".rating > span").click(function() {
+        // Setup variables
+        videoParent = $(this).parent().parent();
+        videoFilename = videoParent.attr('id');
+        vote = parseInt($(this).attr('value'));
+
+        // Update UI.
+        $(this).parent().children('span').each(function() {
+            if (parseInt($(this).attr('value')) <= vote) {
+                $(this).addClass('activated_rating');
+            }
+            else {
+                $(this).removeClass('activated_rating');
+            }
+        });
+
+        // Add to database.
+        $.post("/vote/", {vote : vote, video : videoFilename, csrfmiddlewaretoken : '{{ csrf_token }}' });
+    });
+</script>
+
+{% endblock %}
