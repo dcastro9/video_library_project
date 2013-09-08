@@ -32,11 +32,13 @@ def vote(request):
             new_rating = Rating(user=request.user, video=video, rating=rating)
             new_rating.save()
         return HttpResponse("Success.")
+    else:
+        return HttpResponse("")
 
 def index(request):
     rated_list = []
     rated_videos = []
-    
+
     if request.user.is_authenticated():
         user = request.user
 
